@@ -14,7 +14,8 @@ namespace Kawaiiju
 	[RequireComponent(typeof(NavMeshAgent))]
 	public class Agent : MonoBehaviour 
 	{
-		private NavMeshAgent m_Agent;
+        public bool clicked = false;
+        private NavMeshAgent m_Agent;
 		public NavMeshAgent agent
 		{
 			get
@@ -24,35 +25,38 @@ namespace Kawaiiju
 				return m_Agent;
 			}
 		}
+        
+        //protected MqttClient mqttClient;
+        //private string clientID;
+        //private void mqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
+        //{
+        //	
+        //}
 
-		protected MqttClient mqttClient;
-		private string clientID;
-		private void mqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
-		{
-			
-		}
+        // -------------------------------------------------------------------
+        // Properties
 
-		// -------------------------------------------------------------------
-		// Properties
-
-		[Header("Agent")]
+        [Header("Agent")]
 		public TrafficType type = TrafficType.Pedestrian;
 		public int maxSpeed = 20;
+        
 
-		// -------------------------------------------------------------------
-		// Initialization
 
-		public void Initialize()
+        // -------------------------------------------------------------------
+        // Initialization
+
+        public void Initialize()
 		{
 			agent.enabled = true;
 			speed = TrafficSystem.Instance.GetAgentSpeedFromKPH(maxSpeed);
 			agent.speed = speed;
 			m_Destination = TrafficSystem.Instance.GetPedestrianDestination();
-			if(m_Destination)
+            clicked = false;
+            if(m_Destination)
 				agent.destination = m_Destination.position;
 
-			mqttClient = new MqttClient("35.193.52.170");
-			mqttClient.Connect(System.Guid.NewGuid().ToString());
+			//mqttClient = new MqttClient("35.193.52.170");
+			//mqttClient.Connect(System.Guid.NewGuid().ToString());
 		}
 
 		// -------------------------------------------------------------------
@@ -68,6 +72,7 @@ namespace Kawaiiju
 
 		public virtual void Update()
 		{
+            
 			if (agent.isOnNavMesh)
 			{
 				if (CheckStop())
@@ -76,8 +81,10 @@ namespace Kawaiiju
 				if (type == TrafficType.Pedestrian)
 					TestDestination();
 			}
-
-			byte[] msg = Encoding.UTF8.GetBytes(
+            if(clicked) {
+                agent.velocity = Vector3.zero;
+            }
+            byte[] msg = Encoding.UTF8.GetBytes(
 				JsonUtility.ToJson(
 					new AgentMessage(
 						transform.position.x, 
@@ -86,7 +93,7 @@ namespace Kawaiiju
 				)
 			);
 
-			mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
+			//mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
 		}
 
 		private void TestDestination()
@@ -134,10 +141,15 @@ namespace Kawaiiju
 			return false;
 		}
 
-		// -------------------------------------------------------------------
-		// WaitZone
+        void OnMouseDown() {
+            // this object was clicked - do something
+            clicked = !clicked;
+        }
 
-		WaitZone m_CurrentWaitZone;
+        // -------------------------------------------------------------------
+        // WaitZone
+
+        WaitZone m_CurrentWaitZone;
 
 		private bool m_IsWaiting;
 		public bool isWaiting { get { return m_IsWaiting; }}
