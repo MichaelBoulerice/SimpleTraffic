@@ -24,28 +24,12 @@ namespace Kawaiiju
 				return m_Agent;
 			}
 		}
-<<<<<<< HEAD
-        
-        //protected MqttClient mqttClient;
-        //private string clientID;
-        //private void mqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
-        //{
-        //	
-        //}
 
-        // -------------------------------------------------------------------
-        // Properties
-
-        [Header("Agent")]
-=======
-
-		
-
+   
 		// -------------------------------------------------------------------
 		// Properties
 
 		[Header("Agent")]
->>>>>>> a76f308e2f8763a8476ade6c7ed083bdf2d2634e
 		public TrafficType type = TrafficType.Pedestrian;
 		public int maxSpeed = 20;
         
@@ -64,11 +48,6 @@ namespace Kawaiiju
             if(m_Destination)
 				agent.destination = m_Destination.position;
 
-<<<<<<< HEAD
-			//mqttClient = new MqttClient("35.193.52.170");
-			//mqttClient.Connect(System.Guid.NewGuid().ToString());
-=======
->>>>>>> a76f308e2f8763a8476ade6c7ed083bdf2d2634e
 		}
 
 		// -------------------------------------------------------------------
@@ -93,25 +72,9 @@ namespace Kawaiiju
 				if (type == TrafficType.Pedestrian)
 					TestDestination();
 			}
-<<<<<<< HEAD
             if(clicked) {
                 agent.velocity = Vector3.zero;
             }
-            byte[] msg = Encoding.UTF8.GetBytes(
-				JsonUtility.ToJson(
-					new AgentMessage(
-						transform.position.x, 
-						transform.position.y
-					)
-				)
-			);
-
-			//mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
-=======
-
-			
-
->>>>>>> a76f308e2f8763a8476ade6c7ed083bdf2d2634e
 		}
 
 		private void TestDestination()

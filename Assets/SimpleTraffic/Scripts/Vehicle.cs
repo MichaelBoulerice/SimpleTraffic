@@ -17,12 +17,9 @@ namespace Kawaiiju
 	{
 		private NavSection m_CurrentNavSection;
 		private NavConnection m_CurrentOutConnection;
-<<<<<<< HEAD
-        
-=======
+
 		private AgentMessage agentMessage;
 		private float time;
->>>>>>> a76f308e2f8763a8476ade6c7ed083bdf2d2634e
 
 		// -------------------------------------------------------------------
 		// Properties
