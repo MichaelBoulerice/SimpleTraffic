@@ -1,8 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 using UnityEngine.AI;
 using Kawaiiju.Traffic;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
+using System.Text;
+using UnityEngine.Serialization;
 
 namespace Kawaiiju
 {
@@ -18,6 +23,13 @@ namespace Kawaiiju
 					m_Agent = GetComponent<NavMeshAgent>();
 				return m_Agent;
 			}
+		}
+
+		protected MqttClient mqttClient;
+		private string clientID;
+		private void mqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
+		{
+			
 		}
 
 		// -------------------------------------------------------------------
@@ -38,6 +50,9 @@ namespace Kawaiiju
 			m_Destination = TrafficSystem.Instance.GetPedestrianDestination();
 			if(m_Destination)
 				agent.destination = m_Destination.position;
+
+			mqttClient = new MqttClient("35.193.52.170");
+			mqttClient.Connect(System.Guid.NewGuid().ToString());
 		}
 
 		// -------------------------------------------------------------------
@@ -53,14 +68,25 @@ namespace Kawaiiju
 
 		public virtual void Update()
 		{
-			if(agent.isOnNavMesh)
+			if (agent.isOnNavMesh)
 			{
-				if(CheckStop())
+				if (CheckStop())
 					agent.velocity = Vector3.zero;
 				CheckWaitZone();
-				if(type == TrafficType.Pedestrian)
+				if (type == TrafficType.Pedestrian)
 					TestDestination();
 			}
+
+			byte[] msg = Encoding.UTF8.GetBytes(
+				JsonUtility.ToJson(
+					new AgentMessage(
+						transform.position.x, 
+						transform.position.y
+					)
+				)
+			);
+
+			mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
 		}
 
 		private void TestDestination()
