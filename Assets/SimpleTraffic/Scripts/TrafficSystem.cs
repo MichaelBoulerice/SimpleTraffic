@@ -32,8 +32,8 @@ namespace  Kawaiiju.Traffic
 		public Transform pool;	// TODO - Get from object pool
 		public bool spawnOnStart = true;
 		public int maxRoadVehicles = 100;
-		public int maxTrains = 5;
-		public int maxPedestrians = 100;
+		public int maxTrains = 0;
+		public int maxPedestrians = 0;
 
 		// -------------------------------------------------------------------
 		// Initialization

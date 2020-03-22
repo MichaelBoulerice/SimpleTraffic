@@ -3,24 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Kawaiiju.Traffic;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
+using System.Text;
+using System;
 
 namespace Kawaiiju
 {
+	
 	[RequireComponent(typeof(Rigidbody))]
 	[RequireComponent(typeof(NavMeshAgent))]
 	public class Vehicle : Agent 
 	{
 		private NavSection m_CurrentNavSection;
 		private NavConnection m_CurrentOutConnection;
+		private AgentMessage agentMessage;
+		private float time;
 
 		// -------------------------------------------------------------------
 		// Properties
 
 		[Header("Vehicle")]
 		public Transform front;
+		public float publishesPerSecond;
 
 		// -------------------------------------------------------------------
 		// Initialization
+
+		private MqttClient mqttClient;
+		private string clientID;
 
 		public virtual void Initialize(NavSection navSection, NavConnection destination)
 		{
@@ -31,6 +42,12 @@ namespace Kawaiiju
 			speed = TrafficSystem.Instance.GetAgentSpeedFromKPH(Mathf.Min(navSection.speedLimit, maxSpeed));
 			agent.speed = speed;
 			agent.destination = destination.transform.position;
+
+			mqttClient = new MqttClient("35.193.52.170");
+			mqttClient.Connect(System.Guid.NewGuid().ToString());
+			agentMessage = gameObject.AddComponent<AgentMessage>();
+			time = 0.0f;
+			publishesPerSecond = 1.0f;
 		}
 
         public virtual void RegisterVehicle(NavSection section, bool isAdd)
@@ -41,6 +58,33 @@ namespace Kawaiiju
 		// -------------------------------------------------------------------
 		// Update
 
+		private void publish()
+		{
+			VehicleStates state;
+			if (agent.velocity.magnitude > 0.0)
+			{
+				state = VehicleStates.DRIVING;
+			}
+			else
+			{
+				state = VehicleStates.STOPPED;
+			}
+
+			agentMessage.x_location = transform.position.x;
+			agentMessage.z_location = transform.position.z;
+			agentMessage.y_rotation = transform.rotation.y;
+			agentMessage.vehicle_speed = (int) Math.Round(agent.velocity.magnitude * 100.0); // 3.6 is the conversion ratio from m/s -> km/h
+			agentMessage.vehicle_state = state;
+			agentMessage.error_state = false;
+			agentMessage.error_code = ErrorType.NONE;
+
+			Debug.Log(agentMessage.ToString());
+
+			byte[] msg = Encoding.UTF8.GetBytes(agentMessage.ToString());
+
+			mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
+		}
+
 		public override void Update()
 		{
 			if(agent.isOnNavMesh)
@@ -48,6 +92,18 @@ namespace Kawaiiju
 				m_Blocked = CheckBlocked();
 			}
 			base.Update();
+
+			time += Time.deltaTime;
+			if(time >= 1.0 / publishesPerSecond)
+			{
+				time = 0.0f;
+				publish();
+			}
+		}
+
+		void OnDestroy()
+		{
+			mqttClient.Disconnect();
 		}
 
 		public override bool CheckStop()

@@ -4,8 +4,7 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.AI;
 using Kawaiiju.Traffic;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+
 using System.Text;
 using UnityEngine.Serialization;
 
@@ -25,12 +24,7 @@ namespace Kawaiiju
 			}
 		}
 
-		protected MqttClient mqttClient;
-		private string clientID;
-		private void mqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
-		{
-			
-		}
+		
 
 		// -------------------------------------------------------------------
 		// Properties
@@ -51,8 +45,6 @@ namespace Kawaiiju
 			if(m_Destination)
 				agent.destination = m_Destination.position;
 
-			mqttClient = new MqttClient("35.193.52.170");
-			mqttClient.Connect(System.Guid.NewGuid().ToString());
 		}
 
 		// -------------------------------------------------------------------
@@ -77,16 +69,8 @@ namespace Kawaiiju
 					TestDestination();
 			}
 
-			byte[] msg = Encoding.UTF8.GetBytes(
-				JsonUtility.ToJson(
-					new AgentMessage(
-						transform.position.x, 
-						transform.position.y
-					)
-				)
-			);
+			
 
-			mqttClient.Publish(mqttClient.ClientId + "/telemetry", msg);
 		}
 
 		private void TestDestination()
