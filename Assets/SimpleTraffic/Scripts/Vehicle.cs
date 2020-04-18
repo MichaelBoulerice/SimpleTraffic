@@ -44,7 +44,7 @@ namespace Kawaiiju
 			agent.speed = speed;
 			agent.destination = destination.transform.position;
 
-			mqttClient = new MqttClient("35.193.52.170");
+			mqttClient = new MqttClient("35.209.240.115");
 			mqttClient.Connect(System.Guid.NewGuid().ToString());
 			agentMessage = gameObject.AddComponent<AgentMessage>();
 			time = 0.0f;
